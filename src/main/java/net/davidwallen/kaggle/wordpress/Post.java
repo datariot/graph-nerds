@@ -19,6 +19,10 @@ public class Post {
     this.underlyingNode = underlyingNode;
     this.underlyingNode.setProperty(UID, id);
   }
+  
+  public Post(Node underlyingNode) {
+    this.underlyingNode = underlyingNode;
+  }
     
   /**
    * Get underlying Neo4j Node

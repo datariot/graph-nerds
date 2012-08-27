@@ -21,6 +21,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.AutoIndexer;
+import org.neo4j.graphdb.index.ReadableIndex;
 
 /**
  *
@@ -45,6 +46,7 @@ public class TrainUsers {
       AutoIndexer<Node> nodeAutoIndexer = graphDb.index().getNodeAutoIndexer();
       nodeAutoIndexer.startAutoIndexingProperty(UID);
       nodeAutoIndexer.setEnabled(true);
+      ReadableIndex<Node> index = nodeAutoIndexer.getAutoIndex();
       
       registerShutdownHook();
 
@@ -59,39 +61,42 @@ public class TrainUsers {
         Blog blog = null;
         Post post = null;
         Transaction tx = graphDb.beginTx();
-        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-          String fieldname = jsonParser.getCurrentName();
-          if (UID.equals(fieldname)) {
-            jsonParser.nextToken();
-            int uid = Integer.parseInt(jsonParser.getText());
-            person = new Person(graphDb.createNode(), uid);
-            person.setInTestSet(testSet);
-          } else if (IN_TEST_SET.equals(fieldname)) {
-            jsonParser.nextToken();
-            testSet = jsonParser.getBooleanValue();
-          } else if (LIKES.equals(fieldname)) {
-            jsonParser.nextToken();
-            // likes is array, loop until token equal to "]"
-            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-              while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                fieldname = jsonParser.getCurrentName();
-                if (BLOG.equals(fieldname)) {
-                  jsonParser.nextToken();
-                  int uid = Integer.parseInt(jsonParser.getText());
-                  blog = new Blog(graphDb.createNode(), uid);
-                } else if (POST.equals(fieldname)) {
-                  jsonParser.nextToken();
-                  int uid = Integer.parseInt(jsonParser.getText());
-                  post = new Post(graphDb.createNode(), uid);
+        try {
+          while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String fieldname = jsonParser.getCurrentName();
+            if (UID.equals(fieldname)) {
+              jsonParser.nextToken();
+              int uid = Integer.parseInt(jsonParser.getText());
+              person = makePersonFromUID(index, uid, testSet);
+            } else if (IN_TEST_SET.equals(fieldname)) {
+              jsonParser.nextToken();
+              testSet = jsonParser.getBooleanValue();
+            } else if (LIKES.equals(fieldname)) {
+              jsonParser.nextToken();
+              // likes is array, loop until token equal to "]"
+              while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                  fieldname = jsonParser.getCurrentName();
+                  if (BLOG.equals(fieldname)) {
+                    jsonParser.nextToken();
+                    int uid = Integer.parseInt(jsonParser.getText());
+                    blog = makeBlogFromUID(index, uid);
+                  } else if (POST.equals(fieldname)) {
+                    jsonParser.nextToken();
+                    int uid = Integer.parseInt(jsonParser.getText());
+                    post = makePostFromUID(index, uid);
+                  }
                 }
+                blog.has(post);
+                person.likes(post);
               }
-              blog.has(post);
-              person.likes(post);
             }
           }
+          tx.success();
+        } finally {
+          jsonParser.close();
+          tx.finish();
         }
-        jsonParser.close();
-        tx.finish();
       }
       graphDb.shutdown();
     } catch (JsonGenerationException ex) {
@@ -116,5 +121,39 @@ public class TrainUsers {
         shutdown();
       }
     });
+  }
+
+  private static Person makePersonFromUID(ReadableIndex<Node> index, int uid, Boolean testSet) {
+    Person person;
+    Node node = index.get(UID, uid).getSingle();
+    if(node != null) {
+      person = new Person(node);
+    } else {
+      person = new Person(graphDb.createNode(), uid);
+      person.setInTestSet(testSet);
+    }
+    return person;
+  }
+
+  private static Blog makeBlogFromUID(ReadableIndex<Node> index, int uid) {
+    Blog blog;
+    Node node = index.get(UID, uid).getSingle();
+    if(node != null) {
+      blog = new Blog(node);
+    } else {
+       blog = new Blog(graphDb.createNode(), uid);
+    }
+    return blog;
+  }
+
+  private static Post makePostFromUID(ReadableIndex<Node> index, int uid) {
+    Post post;
+    Node node = index.get(UID, uid).getSingle();
+    if(node != null) {
+      post = new Post(node);
+    } else {
+      post = new Post(graphDb.createNode(), uid);
+    }
+    return post;
   }
 }

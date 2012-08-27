@@ -18,6 +18,9 @@ public class Blog {
     this.underlyingNode.setProperty(UID, id);
   }
     
+  public Blog(Node underlyingNode) {
+    this.underlyingNode = underlyingNode;
+  }
   /**
    * Get the value of underlyingNode
    *

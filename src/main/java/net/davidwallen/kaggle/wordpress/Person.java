@@ -20,6 +20,10 @@ public class Person {
     this.underlyingNode = underlyingNode;
     this.underlyingNode.setProperty(UID, id);
   }
+  
+  public Person(Node underlyingNode) {
+    this.underlyingNode = underlyingNode;
+  }
 
   /**
    * Get the value of underlyingNode
