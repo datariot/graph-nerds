@@ -29,7 +29,7 @@ import org.neo4j.graphdb.index.ReadableIndex;
  */
 public class TrainUsers {
 
-  private static final String DB_PATH = "neo4j-store";
+  public static final String DB_PATH = "neo4j-store";
   private static final String FILE_PATH = "trainUsers.json";
   private static final String UID = "uid";
   private static final String IN_TEST_SET = "inTestSet";
@@ -98,7 +98,6 @@ public class TrainUsers {
           tx.finish();
         }
       }
-      graphDb.shutdown();
     } catch (JsonGenerationException ex) {
       Logger.getLogger(TrainUsers.class.getName()).log(Level.SEVERE, null, ex);
     } catch (IOException ex) {
