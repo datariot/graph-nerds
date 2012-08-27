@@ -27,9 +27,9 @@ public class InitialQuery {
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start person=node:node_auto_index(uid = '7136386') " +
-              "match person-[:LIKES_POST]->post " +
-              "return person, count(*)"
+              "start person=node:node_auto_index(uid = '33496512') " +
+              "match person-[:LIKES_POST]->()<-[:LIKES_POST]-similar " +
+              "return similar"
             );
       System.out.println(result);
     } finally {
