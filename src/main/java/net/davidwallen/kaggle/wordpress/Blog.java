@@ -8,37 +8,18 @@ import org.neo4j.graphdb.Node;
  * 
  * @author surferdwa
  */
-public class Blog {
+public class Blog extends BaseModel {
   
-  public final String UID = "uid";
-  private Node underlyingNode;
+  public static final String TYPE = "blog";
 
-  public Blog(Node underlyingNode, Integer id) {
-    this.underlyingNode = underlyingNode;
-    this.underlyingNode.setProperty(UID, id);
+  public Blog(Node underlyingNode, String uid) {
+    super(underlyingNode, uid, TYPE);
   }
     
   public Blog(Node underlyingNode) {
-    this.underlyingNode = underlyingNode;
-  }
-  /**
-   * Get the value of underlyingNode
-   *
-   * @return the value of underlyingNode
-   */
-  public Node getUnderlyingNode() {
-    return underlyingNode;
+    super(underlyingNode);
   }
 
-  /**
-   * The ID assigned to the blog.
-   * 
-   * @return blog ID.
-   */
-  public Integer getID() {
-    return (Integer)this.underlyingNode.getProperty(UID);
-  }
-  
   public void has(Post post) {
     this.underlyingNode.createRelationshipTo(post.getUnderlyingNode(), Relationships.HAS_POST);
   }

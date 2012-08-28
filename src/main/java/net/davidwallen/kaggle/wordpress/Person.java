@@ -9,38 +9,17 @@ import org.neo4j.graphdb.Node;
  * 
  * @author surferdwa
  */
-public class Person {
+public class Person extends BaseModel {
   
-  public final String UID = "uid";
-  public final String IN_TEST_SET = "inTestSet";
-  
-  private Node underlyingNode;
+  public static final String IN_TEST_SET = "inTestSet";
+  public static final String TYPE = "person";
 
-  public Person(Node underlyingNode, Integer id) {
-    this.underlyingNode = underlyingNode;
-    this.underlyingNode.setProperty(UID, id);
+  public Person(Node underlyingNode, String uid) {
+    super(underlyingNode, uid, TYPE);
   }
-  
+
   public Person(Node underlyingNode) {
-    this.underlyingNode = underlyingNode;
-  }
-
-  /**
-   * Get the value of underlyingNode
-   *
-   * @return the value of underlyingNode
-   */
-  public Node getUnderlyingNode() {
-    return underlyingNode;
-  }
-  
-  /**
-   * Get the id of the user.
-   *
-   * @return the value of id
-   */
-  public Integer getId() {
-    return (Integer)this.underlyingNode.getProperty(UID);
+    super(underlyingNode);
   }
   
   public void likes(Post post) {

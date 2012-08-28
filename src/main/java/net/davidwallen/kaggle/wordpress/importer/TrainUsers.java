@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.davidwallen.kaggle.wordpress.importer;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -16,6 +12,7 @@ import java.util.logging.Logger;
 import net.davidwallen.kaggle.wordpress.Blog;
 import net.davidwallen.kaggle.wordpress.Person;
 import net.davidwallen.kaggle.wordpress.Post;
+import net.davidwallen.kaggle.wordpress.Properties;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -25,17 +22,19 @@ import org.neo4j.graphdb.index.ReadableIndex;
 
 /**
  *
- * @author dallen
+ * Import the TrainUsers.json file.
+ * 
+ * @author surferdwa
  */
 public class TrainUsers {
 
   public static final String DB_PATH = "neo4j-store";
   private static final String FILE_PATH = "trainUsers.json";
-  private static final String UID = "uid";
-  private static final String IN_TEST_SET = "inTestSet";
+  
   private static final String LIKES = "likes";
   private static final String BLOG = "blog";
   private static final String POST = "post_id";
+  private static final String UID = Properties.UID.name();
   
   private static GraphDatabaseService graphDb;
 
@@ -66,9 +65,9 @@ public class TrainUsers {
             String fieldname = jsonParser.getCurrentName();
             if (UID.equals(fieldname)) {
               jsonParser.nextToken();
-              int uid = Integer.parseInt(jsonParser.getText());
+              String uid = jsonParser.getText();
               person = makePersonFromUID(index, uid, testSet);
-            } else if (IN_TEST_SET.equals(fieldname)) {
+            } else if (Person.IN_TEST_SET.equals(fieldname)) {
               jsonParser.nextToken();
               testSet = jsonParser.getBooleanValue();
             } else if (LIKES.equals(fieldname)) {
@@ -79,11 +78,11 @@ public class TrainUsers {
                   fieldname = jsonParser.getCurrentName();
                   if (BLOG.equals(fieldname)) {
                     jsonParser.nextToken();
-                    int uid = Integer.parseInt(jsonParser.getText());
+                    String uid = jsonParser.getText();
                     blog = makeBlogFromUID(index, uid);
                   } else if (POST.equals(fieldname)) {
                     jsonParser.nextToken();
-                    int uid = Integer.parseInt(jsonParser.getText());
+                    String uid = jsonParser.getText();
                     post = makePostFromUID(index, uid);
                   }
                 }
@@ -122,7 +121,7 @@ public class TrainUsers {
     });
   }
 
-  private static Person makePersonFromUID(ReadableIndex<Node> index, int uid, Boolean testSet) {
+  private static Person makePersonFromUID(ReadableIndex<Node> index, String uid, Boolean testSet) {
     Person person;
     Node node = index.get(UID, uid).getSingle();
     if(node != null) {
@@ -134,7 +133,7 @@ public class TrainUsers {
     return person;
   }
 
-  private static Blog makeBlogFromUID(ReadableIndex<Node> index, int uid) {
+  private static Blog makeBlogFromUID(ReadableIndex<Node> index, String uid) {
     Blog blog;
     Node node = index.get(UID, uid).getSingle();
     if(node != null) {
@@ -145,7 +144,7 @@ public class TrainUsers {
     return blog;
   }
 
-  private static Post makePostFromUID(ReadableIndex<Node> index, int uid) {
+  private static Post makePostFromUID(ReadableIndex<Node> index, String uid) {
     Post post;
     Node node = index.get(UID, uid).getSingle();
     if(node != null) {

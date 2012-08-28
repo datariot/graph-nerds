@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.davidwallen.kaggle.wordpress.query;
 
 import net.davidwallen.kaggle.wordpress.importer.TrainUsers;
@@ -12,9 +8,12 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
  *
- * @author dallen
+ * This query will traverse the path Person -- [Likes] -- Post -- [Has_Post] -- Blog
+ * to find the the blogs associated with the posts the source person has liked.
+ * 
+ * @author surferdwa
  */
-public class InitialQuery {
+public class BlogsPersonLikes {
   
   private static GraphDatabaseService graphDb;
   private static ExecutionEngine engine;
@@ -28,8 +27,8 @@ public class InitialQuery {
     try {
       ExecutionResult result = engine.execute(
               "start person=node:node_auto_index(uid = '33496512') " +
-              "match person-[:LIKES_POST]->()<-[:LIKES_POST]-similar " +
-              "return similar"
+              "match person-[:LIKES_POST]->()<-[:HAS_POST]-blog " +
+              "return distinct blog"
             );
       System.out.println(result);
     } finally {
