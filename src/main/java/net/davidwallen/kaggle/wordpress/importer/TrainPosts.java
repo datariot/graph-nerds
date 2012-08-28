@@ -22,23 +22,30 @@ import org.neo4j.graphdb.index.ReadableIndex;
 
 /**
  *
- * Import the TrainUsers.json file.
+ * Import the TrainPosts.json file.
  * 
- * {  "inTestSet": false,
- *    "uid": "34168956",
+ * {  "date_gmt":"2012-03-28 19:59:45",
+ *    "language": "en",
+ *    "author": "5",
+ *    "url": "http://matt.wordpress.com/?p=3841",
+ *    "title": "Fish tacos and spicy slaw",
+ *    "blog": "4",
+ *    "post_id": "1329369",
+ *    "tags": [],
+ *    "blogname": "Matt on Not-WordPress",
+ *    "date": "2012-03-28 19:59:45",
+ *    "content": "HTML IN HERE",
+ *    "categories": ["Moblog"],
  *    "likes": [
- *      { "blog": "18164949",
- *        "post_id": "1740778",
- *        "like_dt": "2012-04-05 14:10:56"}
- *     ]
- * }
+ *       {"dt": "2012-03-28 21:05:37", "uid": "31367867"}
+ *     ]}
  * 
  * @author surferdwa
  */
-public class TrainUsers {
+public class TrainPosts {
 
   public static final String DB_PATH = "neo4j-store";
-  private static final String FILE_PATH = "trainUsers.json";
+  private static final String FILE_PATH = "trainPosts.json";
   
   private static final String LIKES = "likes";
   private static final String BLOG = "blog";
