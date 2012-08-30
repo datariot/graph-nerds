@@ -8,8 +8,8 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
  *
- * This query traverses the path Person -- [Likes] -- Post -- [Likes] -- Person
- * to return a list of people who like the same post as the source node.
+ * This query traverses the path post -- [Likes] -- person
+ * to return a count of the number of likes.
  * 
  * @author surferdwa
  */
@@ -26,9 +26,10 @@ public class TopPosts {
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start person=node:node_auto_index(uid = '33496512') " +
-              "match person-[:LIKES_POST]->()<-[:LIKES_POST]-similar " +
-              "return similar"
+              "start post=node:node_auto_index(type = 'post') " +
+              "match post<-[:LIKES_POST]-person " +
+              "return post, count(*) as likes " +
+              "order by likes"
             );
       System.out.println(result);
     } finally {

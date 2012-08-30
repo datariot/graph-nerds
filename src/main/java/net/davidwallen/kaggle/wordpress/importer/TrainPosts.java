@@ -7,12 +7,17 @@ import com.fasterxml.jackson.core.JsonToken;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.davidwallen.kaggle.wordpress.Blog;
+import net.davidwallen.kaggle.wordpress.Category;
+import net.davidwallen.kaggle.wordpress.Language;
 import net.davidwallen.kaggle.wordpress.Person;
 import net.davidwallen.kaggle.wordpress.Post;
 import net.davidwallen.kaggle.wordpress.Properties;
+import net.davidwallen.kaggle.wordpress.Tag;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -50,6 +55,14 @@ public class TrainPosts {
   private static final String LIKES = "likes";
   private static final String BLOG = "blog";
   private static final String POST = "post_id";
+  private static final String TAGS = "tags";
+  private static final String TITLE = "title";
+  private static final String URL = "url";
+  private static final String AUTHOR = "author";
+  private static final String CATEGORIES = "categories";
+  private static final String LANGUAGE = "language";
+  private static final String DATE = "date_gmt";
+  private static final String BLOG_NAME = "blogname";
   private static final String UID = Properties.UID.name();
   
   private static GraphDatabaseService graphDb;
@@ -71,48 +84,16 @@ public class TrainPosts {
       String userJson;
       while ((userJson = in.readLine()) != null) {
         JsonParser jsonParser = jsonFactory.createJsonParser(userJson);
-        Boolean testSet = false;
-        Person person = null;
-        Blog blog = null;
-        Post post = null;
         Transaction tx = graphDb.beginTx();
         try {
-          while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            String fieldname = jsonParser.getCurrentName();
-            if (UID.equals(fieldname)) {
-              jsonParser.nextToken();
-              String uid = jsonParser.getText();
-              person = makePersonFromUID(index, uid, testSet);
-            } else if (Person.IN_TEST_SET.equals(fieldname)) {
-              jsonParser.nextToken();
-              testSet = jsonParser.getBooleanValue();
-            } else if (LIKES.equals(fieldname)) {
-              jsonParser.nextToken();
-              // likes is array, loop until token equal to "]"
-              while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                  fieldname = jsonParser.getCurrentName();
-                  if (BLOG.equals(fieldname)) {
-                    jsonParser.nextToken();
-                    String uid = jsonParser.getText();
-                    blog = makeBlogFromUID(index, uid);
-                  } else if (POST.equals(fieldname)) {
-                    jsonParser.nextToken();
-                    String uid = jsonParser.getText();
-                    post = makePostFromUID(index, uid);
-                  }
-                }
-                blog.has(post);
-                person.likes(post);
-              }
-            }
-          }
+          parseLine(jsonParser, index);
           tx.success();
         } finally {
           jsonParser.close();
           tx.finish();
         }
       }
+      in.close();
     } catch (JsonGenerationException ex) {
       Logger.getLogger(TrainUsers.class.getName()).log(Level.SEVERE, null, ex);
     } catch (IOException ex) {
@@ -137,19 +118,18 @@ public class TrainPosts {
     });
   }
 
-  private static Person makePersonFromUID(ReadableIndex<Node> index, String uid, Boolean testSet) {
+  private static Person makePerson(ReadableIndex<Node> index, String uid) {
     Person person;
     Node node = index.get(UID, uid).getSingle();
     if(node != null) {
       person = new Person(node);
     } else {
       person = new Person(graphDb.createNode(), uid);
-      person.setInTestSet(testSet);
     }
     return person;
   }
 
-  private static Blog makeBlogFromUID(ReadableIndex<Node> index, String uid) {
+  private static Blog makeBlog(ReadableIndex<Node> index, String uid) {
     Blog blog;
     Node node = index.get(UID, uid).getSingle();
     if(node != null) {
@@ -160,7 +140,7 @@ public class TrainPosts {
     return blog;
   }
 
-  private static Post makePostFromUID(ReadableIndex<Node> index, String uid) {
+  private static Post makePost(ReadableIndex<Node> index, String uid) {
     Post post;
     Node node = index.get(UID, uid).getSingle();
     if(node != null) {
@@ -169,5 +149,105 @@ public class TrainPosts {
       post = new Post(graphDb.createNode(), uid);
     }
     return post;
+  }
+
+  private static Language makeLanguage(ReadableIndex<Node> index, String uid) {
+    Language language;
+    Node node = index.get(UID, uid).getSingle();
+    if(node != null) {
+      language = new Language(node);
+    } else {
+      language = new Language(graphDb.createNode(), uid);
+    }
+    return language;
+  }
+
+  private static Tag makeTag(ReadableIndex<Node> index, String uid) {
+    Tag tag;
+    Node node = index.get(UID, uid).getSingle();
+    if(node != null) {
+      tag = new Tag(node);
+    } else {
+      tag = new Tag(graphDb.createNode(), uid);
+    }
+    return tag;
+  }
+
+  private static Category makeCategory(ReadableIndex<Node> index, String uid) {
+    Category category;
+    Node node = index.get(UID, uid).getSingle();
+    if(node != null) {
+      category = new Category(node);
+    } else {
+      category = new Category(graphDb.createNode(), uid);
+    }
+    return category;
+  }
+
+  private static void parseLine(JsonParser jsonParser, ReadableIndex<Node> index) throws IOException {
+    Person author = null;
+    Blog blog = null;
+    Post post = null;
+    String date = null;
+    String url = null;
+    String title = null;
+    String blogName = null;
+    Language language = null;
+    final Collection<Tag> tags = new LinkedList<Tag>();
+    final Collection<Category> categories = new LinkedList<Category>();
+    
+    while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+      String fieldname = jsonParser.getCurrentName();
+      if (AUTHOR.equals(fieldname)) {
+        jsonParser.nextToken();
+        author = makePerson(index, jsonParser.getText());
+      }else if (BLOG.equals(fieldname)) {
+        jsonParser.nextToken();
+        String uid = jsonParser.getText();
+        blog = makeBlog(index, uid);
+      } else if (POST.equals(fieldname)) {
+        jsonParser.nextToken();
+        String uid = jsonParser.getText();
+        post = makePost(index, uid);
+      } else if (DATE.equals(fieldname)) {
+        jsonParser.nextToken();
+        date = jsonParser.getText();
+      } else if (LANGUAGE.equals(fieldname)) {
+        jsonParser.nextToken();
+        language = makeLanguage(index, jsonParser.getText());
+      } else if (URL.equals(fieldname)) {
+        jsonParser.nextToken();
+        url = jsonParser.getText();
+      } else if (TITLE.equals(fieldname)) {
+        jsonParser.nextToken();
+        title = jsonParser.getText();
+      } else if (BLOG_NAME.equals(fieldname)) {
+        jsonParser.nextToken();
+        blogName = jsonParser.getText();
+      } else if (TAGS.equals(fieldname)) {
+        // likes is array, loop until token equal to "]"
+        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+          jsonParser.nextToken();
+          tags.add(makeTag(index, jsonParser.getText()));
+        }
+      } else if (CATEGORIES.equals(fieldname)) {
+        // likes is array, loop until token equal to "]"
+        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+          jsonParser.nextToken();
+          categories.add(makeCategory(index, jsonParser.getText()));
+        }
+      }
+    }
+    post.setDate(date);
+    post.setURL(url);
+    post.setTitle(title);
+    post.setLanguage(language);
+    post.addTags(tags);
+    post.addCategories(categories);
+    post.setAuthor(author);
+    blog.has(post);
+    if(null!=blogName) {
+      blog.setName(blogName);
+    }
   }
 }
