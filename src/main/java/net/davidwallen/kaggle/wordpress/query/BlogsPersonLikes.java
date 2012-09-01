@@ -26,7 +26,7 @@ public class BlogsPersonLikes {
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start person=node:node_auto_index(uid = '33496512') " +
+              "start person=node:node_auto_index(UID = '33496512') " +
               "match person-[:LIKES_POST]->()<-[:HAS_POST]-blog " +
               "return distinct blog"
             );

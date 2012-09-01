@@ -64,6 +64,7 @@ public class TrainPosts {
   private static final String DATE = "date_gmt";
   private static final String BLOG_NAME = "blogname";
   private static final String UID = Properties.UID.name();
+  private static final String TYPE = Properties.UID.name();
   
   private static GraphDatabaseService graphDb;
 
@@ -73,6 +74,7 @@ public class TrainPosts {
       graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
       AutoIndexer<Node> nodeAutoIndexer = graphDb.index().getNodeAutoIndexer();
       nodeAutoIndexer.startAutoIndexingProperty(UID);
+      nodeAutoIndexer.startAutoIndexingProperty(TYPE);
       nodeAutoIndexer.setEnabled(true);
       ReadableIndex<Node> index = nodeAutoIndexer.getAutoIndex();
       

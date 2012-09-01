@@ -2,6 +2,7 @@ package net.davidwallen.kaggle.wordpress;
 
 import org.neo4j.graphdb.Node;
 
+
 /**
  *
  * The language a post is written in.

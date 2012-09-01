@@ -43,7 +43,9 @@ public class TrainUsers {
   private static final String LIKES = "likes";
   private static final String BLOG = "blog";
   private static final String POST = "post_id";
+  private static final String JSON_ID = "uid";
   private static final String UID = Properties.UID.name();
+  private static final String TYPE = Properties.TYPE.name();
   
   private static GraphDatabaseService graphDb;
 
@@ -53,6 +55,7 @@ public class TrainUsers {
       graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
       AutoIndexer<Node> nodeAutoIndexer = graphDb.index().getNodeAutoIndexer();
       nodeAutoIndexer.startAutoIndexingProperty(UID);
+      nodeAutoIndexer.startAutoIndexingProperty(TYPE);
       nodeAutoIndexer.setEnabled(true);
       ReadableIndex<Node> index = nodeAutoIndexer.getAutoIndex();
       
@@ -72,7 +75,7 @@ public class TrainUsers {
         try {
           while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jsonParser.getCurrentName();
-            if (UID.equals(fieldname)) {
+            if (JSON_ID.equals(fieldname)) {
               jsonParser.nextToken();
               String uid = jsonParser.getText();
               person = makePersonFromUID(index, uid, testSet);
@@ -85,15 +88,15 @@ public class TrainUsers {
               while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
                 while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                   fieldname = jsonParser.getCurrentName();
-                  if (BLOG.equals(fieldname)) {
-                    jsonParser.nextToken();
-                    String uid = jsonParser.getText();
-                    blog = makeBlogFromUID(index, uid);
-                  } else if (POST.equals(fieldname)) {
+                  if (POST.equals(fieldname)) {
                     jsonParser.nextToken();
                     String uid = jsonParser.getText();
                     post = makePostFromUID(index, uid);
-                  }
+                  } else if (BLOG.equals(fieldname)) {
+                    jsonParser.nextToken();
+                    String uid = jsonParser.getText();
+                    blog = makeBlogFromUID(index, uid);
+                  } 
                 }
                 blog.has(post);
                 person.likes(post);
