@@ -2,6 +2,7 @@ package net.davidwallen.kaggle.wordpress;
 
 import java.util.Collection;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 /**
  *
@@ -17,8 +18,9 @@ public class Post extends BaseModel {
   public static final String TITLE = "title";
   public static final String URL = "url";
   
-  public Post(Node underlyingNode, String uid) {
+  public Post(Node underlyingNode, String uid, Index<Node> index) {
     super(underlyingNode, uid, TYPE);
+    index.add(underlyingNode, Properties.UID.name(), uid);
   }
   
   public Post(Node underlyingNode) {
@@ -34,7 +36,7 @@ public class Post extends BaseModel {
   }
 
   public void setTitle(String title) {
-    this.underlyingNode.setProperty(TITLE, URL);
+    this.underlyingNode.setProperty(TITLE, title);
   }
 
   public void setLanguage(Language language) {

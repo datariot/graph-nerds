@@ -1,6 +1,7 @@
 package net.davidwallen.kaggle.wordpress;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 /**
  *
@@ -12,8 +13,9 @@ public class Tag extends BaseModel {
 
   public static final String TYPE = "tag";
 
-  public Tag(Node underlyingNode, String uid) {
+  public Tag(Node underlyingNode, String uid, Index<Node> index) {
     super(underlyingNode, uid, TYPE);
+    index.add(underlyingNode, Properties.UID.name(), uid);
   }
   
   public Tag(Node underlyingNode) {

@@ -1,6 +1,6 @@
 package net.davidwallen.kaggle.wordpress.query;
 
-import net.davidwallen.kaggle.wordpress.importer.TrainUsers;
+import net.davidwallen.kaggle.wordpress.importer.TrainPosts;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -19,16 +19,16 @@ public class BlogsPersonLikes {
   private static ExecutionEngine engine;
 
   public static void main(final String[] args) {
-    graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(TrainUsers.DB_PATH);
+    graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(TrainPosts.DB_PATH);
     
     registerShutdownHook();
     
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start person=node:node_auto_index(UID = '33496512') " +
-              "match person-[:LIKES_POST]->()<-[:HAS_POST]-blog " +
-              "return distinct blog"
+              "start person=node:people(UID = '5') " +
+              "match person-[:LIKES_POST]->post<-[:HAS_POST]-blog, post<-[:POSTED]-author " +
+              "return distinct person, blog, author"
             );
       System.out.println(result);
     } finally {

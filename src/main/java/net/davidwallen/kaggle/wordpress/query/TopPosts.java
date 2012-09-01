@@ -1,6 +1,6 @@
 package net.davidwallen.kaggle.wordpress.query;
 
-import net.davidwallen.kaggle.wordpress.importer.TrainUsers;
+import net.davidwallen.kaggle.wordpress.importer.TrainPosts;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -19,17 +19,16 @@ public class TopPosts {
   private static ExecutionEngine engine;
 
   public static void main(final String[] args) {
-    graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(TrainUsers.DB_PATH);
+    graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(TrainPosts.DB_PATH);
     
     registerShutdownHook();
     
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start post=node:node_auto_index(type = 'post') " +
-              "match post<-[:LIKES_POST]-person " +
-              "return post, count(*) as likes " +
-              "order by likes"
+              "start post=node:posts('UID:*') " +
+              "match post-[r?]-x " +
+              "return distinct post, r, x"
             );
       System.out.println(result);
     } finally {

@@ -1,6 +1,7 @@
 package net.davidwallen.kaggle.wordpress;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 
 /**
@@ -13,8 +14,9 @@ public class Language extends BaseModel {
 
   public static final String TYPE = "language";
 
-  public Language(Node underlyingNode, String uid) {
+  public Language(Node underlyingNode, String uid, Index<Node> index) {
     super(underlyingNode, uid, TYPE);
+    index.add(underlyingNode, Properties.UID.name(), uid);
   }
   
   public Language(Node underlyingNode) {
