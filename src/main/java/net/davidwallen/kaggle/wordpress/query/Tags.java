@@ -8,12 +8,12 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
  *
- * This query traverses the path Person -- [Likes] -- Post -- [Likes] -- Person
- * to return a list of people who like the same post as the source node.
+ * This query traverses the path post -- [Likes] -- person
+ * to return a count of the number of likes.
  * 
  * @author surferdwa
  */
-public class PeopleLikeSamePost {
+public class Tags {
   
   private static GraphDatabaseService graphDb;
   private static ExecutionEngine engine;
@@ -26,10 +26,20 @@ public class PeopleLikeSamePost {
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start person=node:people('UID:25564502') " +
-              "match person-[:LIKES_POST]->()<-[:LIKES_POST]-similar " +
-              "return distinct similar"
-            );
+          "start tag=node:tags(UID='cat') " +
+          "match tag<-[:TAGGED]-post<-[:POSTED]-author " +
+          "return distinct author.UID as CatAuthor, count(post) as count " +
+          "order by count desc " +
+          "limit 10"
+        );
+      System.out.println(result);
+      result = engine.execute(
+          "start tag=node:tags(UID='cat') " +
+          "match tag<-[:TAGGED]-post<-[:LIKES_POST]-liker " +
+          "return distinct liker.UID as CatLiker, count(liker) as count " +
+          "order by count desc " +
+          "limit 10"
+        );
       System.out.println(result);
     } finally {
       graphDb.shutdown();

@@ -8,12 +8,11 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
  *
- * This query traverses the path post -- [Likes] -- person
- * to return a count of the number of likes.
+ * This query lists all language nodes in the graph. Currently only 'en'... Boo!
  * 
  * @author surferdwa
  */
-public class TopPosts {
+public class Languages {
   
   private static GraphDatabaseService graphDb;
   private static ExecutionEngine engine;
@@ -26,9 +25,8 @@ public class TopPosts {
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start post=node:posts('UID:*') " +
-              "match post-[r?]-x " +
-              "return distinct post, r, x"
+              "start language=node:languages('UID:*') " +
+              "return language"
             );
       System.out.println(result);
     } finally {

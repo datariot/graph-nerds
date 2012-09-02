@@ -50,9 +50,13 @@ import org.neo4j.graphdb.index.IndexManager;
  * @author surferdwa
  */
 public class TrainPosts {
+  
+  private static int totalPosts = 1196111;
+  private static int processCount = 0;
+  private static final long startTime = System.currentTimeMillis();
 
-  public static final String DB_PATH = "neo4j-store-small";
-  private static final String FILE_PATH = "smallTrainPosts.json";
+  public static final String DB_PATH = "neo4j-store";
+  private static final String FILE_PATH = "trainPosts.json";
   
   private static final String LIKES = "likes";
   private static final String BLOG = "blog";
@@ -106,7 +110,7 @@ public class TrainPosts {
     } catch (IOException ex) {
       Logger.getLogger(TrainUsers.class.getName()).log(Level.SEVERE, null, ex);
     }
-
+    System.out.println("Elapsed Time: " + (System.currentTimeMillis()-startTime)+" ms");
   }
 
   private static void shutdown() {
@@ -284,6 +288,15 @@ public class TrainPosts {
     blog.has(post);
     if(null!=blogName) {
       blog.setName(blogName);
+    }
+    printProgress();
+  }
+  
+  private static void printProgress() {
+    processCount += 1;
+    double progress = (double) ((processCount*1.0)/(totalPosts*1.0)*100);
+    if (0==processCount%10000) {
+      System.out.println(progress+" "+(System.currentTimeMillis()-startTime));
     }
   }
 }

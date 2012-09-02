@@ -26,11 +26,45 @@ public class BlogsPersonLikes {
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start person=node:people(UID = '5') " +
-              "match person-[:LIKES_POST]->post<-[:HAS_POST]-blog, post<-[:POSTED]-author " +
-              "return distinct person, blog, author"
+              "start person=node:people(UID = '24602792') " +
+              "match person-[:LIKES_POST]->post<-[:POSTED]-author, post<-[:LIKES_POST]-liker " +
+              "return post.title as title, author.UID as author, count(liker) as likes " +
+              "order by likes desc"
             );
       System.out.println(result);
+      
+      result = engine.execute(
+              "start person=node:people(UID = '24602792') " +
+              "match person-[:LIKES_POST]->post-[:IN_CATEGORY]->category " +
+              "return distinct category.UID as Categories " +
+              "order by Categories asc"
+            );
+      System.out.println(result);
+      
+      result = engine.execute(
+              "start person=node:people(UID = '24602792') " +
+              "match person-[:LIKES_POST]->post-[:TAGGED]->tag " +
+              "return distinct tag.UID as Tags " +
+              "order by Tags asc"
+            );
+      System.out.println(result);
+   
+      result = engine.execute(
+              "start person=node:people(UID = '24602792') " +
+              "match person-[:LIKES_POST]->()<-[:HAS_POST]-blog-[:HAS_POST]-post " +
+              "return distinct blog.name as blog, count(post) as posts " +
+              "order by posts desc"
+            );
+      System.out.println(result);
+      
+      result = engine.execute(
+              "start person=node:people(UID = '24602792') " +
+              "match person-[:LIKES_POST]->()<-[:POSTED]-author, author-[:LIKES_POST]->post<-[:LIKES_POST]-liker " +
+              "return post.title as title, count(liker) as likes " +
+              "order by likes desc"
+            );
+      System.out.println(result);
+      
     } finally {
       graphDb.shutdown();
     }
