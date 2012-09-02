@@ -64,7 +64,7 @@ public class BlogsPersonLikes {
               "order by likes desc"
             );
       System.out.println(result);
-      
+
     } finally {
       graphDb.shutdown();
     }
