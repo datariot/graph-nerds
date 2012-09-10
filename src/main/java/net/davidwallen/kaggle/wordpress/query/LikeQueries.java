@@ -13,7 +13,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
  * 
  * @author surferdwa
  */
-public class PeopleLikeSamePost {
+public class LikeQueries {
   
   private static GraphDatabaseService graphDb;
   private static ExecutionEngine engine;
@@ -28,7 +28,16 @@ public class PeopleLikeSamePost {
       ExecutionResult result = engine.execute(
               "start person=node:people('UID:25564502') " +
               "match person-[:LIKES_POST]->()<-[:LIKES_POST]-similar " +
-              "return distinct similar"
+              "return distinct similar.UID"
+            );
+      System.out.println(result);
+      
+      result = engine.execute(
+              "start person=node:people('UID:*') " +
+              "match person-[:LIKES_POST]->post " +
+              "return distinct person.UID, count(post) as count " +
+              "order by count desc " +
+              "limit 10"
             );
       System.out.println(result);
     } finally {
