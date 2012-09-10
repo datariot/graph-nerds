@@ -8,8 +8,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
  *
- * This query traverses the path post -- [Likes] -- person
- * to return a count of the number of likes.
+ * Queries for exploring the Tag objects.
  * 
  * @author surferdwa
  */
@@ -25,6 +24,8 @@ public class Tags {
     
     engine = new ExecutionEngine( graphDb );
     try {
+      
+      //A query to find the top "cat" authors.
       ExecutionResult result = engine.execute(
           "start tag=node:tags(UID='cat') " +
           "match tag<-[:TAGGED]-post<-[:POSTED]-author " +
@@ -33,12 +34,23 @@ public class Tags {
           "limit 10"
         );
       System.out.println(result);
+      
+      //A query to find the to "cat" likers.
       result = engine.execute(
           "start tag=node:tags(UID='cat') " +
           "match tag<-[:TAGGED]-post<-[:LIKES_POST]-liker " +
           "return distinct liker.UID as CatLiker, count(liker) as count " +
           "order by count desc " +
           "limit 10"
+        );
+      System.out.println(result);
+      
+      //Verify Top Cat Liker
+      result = engine.execute(
+          "start liker=node:people(UID='28575716'), tag=node:tags(UID='cat') " +
+          "match tag<-[:TAGGED]-post<-[:LIKES_POST]-liker " +
+          "return distinct post.UID, post.title " +
+          "order by post.title"
         );
       System.out.println(result);
     } finally {

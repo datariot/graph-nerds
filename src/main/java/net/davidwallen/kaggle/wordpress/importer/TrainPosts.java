@@ -83,7 +83,7 @@ public class TrainPosts {
       IndexManager indexer = graphDb.index();
       indexes.put(Blog.TYPE, indexer.forNodes( "blogs" ));
       indexes.put(Category.TYPE, indexer.forNodes( "categories" ));
-      indexes.put(Language.TYPE, indexer.forNodes( "languages" ));
+      //indexes.put(Language.TYPE, indexer.forNodes( "languages" ));
       indexes.put(Person.TYPE, indexer.forNodes( "people" ));
       indexes.put(Post.TYPE, indexer.forNodes( "posts" ));
       indexes.put(Tag.TYPE, indexer.forNodes( "tags" ));
@@ -232,9 +232,9 @@ public class TrainPosts {
         case DATE:
           date = jsonParser.getText();
           break;
-        case LANGUAGE:
-          language = makeLanguage(jsonParser.getText());
-          break;
+//        case LANGUAGE: //Removing langauge because there is only one language represented.
+//          language = makeLanguage(jsonParser.getText());
+//          break;
         case URL:
           url = jsonParser.getText();
           break;
@@ -281,7 +281,7 @@ public class TrainPosts {
     post.setDate(date);
     post.setURL(url);
     post.setTitle(title);
-    post.setLanguage(language);
+    //post.setLanguage(language);
     post.addTags(tags);
     post.addCategories(categories);
     post.setAuthor(author);

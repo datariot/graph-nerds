@@ -8,12 +8,11 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
  *
- * This query will traverse the path Person -- [Likes] -- Post -- [Has_Post] -- Blog
- * to find the the blogs associated with the posts the source person has liked.
+ * This query looks at various aspects of the graph from a person object.
  * 
  * @author surferdwa
  */
-public class BlogsPersonLikes {
+public class PersonInfo {
   
   private static GraphDatabaseService graphDb;
   private static ExecutionEngine engine;
@@ -25,14 +24,16 @@ public class BlogsPersonLikes {
     
     engine = new ExecutionEngine( graphDb );
     try {
+      //Determine Posts a person likes, the author, and total post likes.
       ExecutionResult result = engine.execute(
               "start person=node:people(UID = '24602792') " +
-              "match person-[:LIKES_POST]->post<-[:POSTED]-author, post<-[:LIKES_POST]-liker " +
-              "return post.title as title, author.UID as author, count(liker) as likes " +
+              "match person-[:LIKES_POST]->post<-[:POSTED]-author, post<-[:LIKES_POST]-liker, post<-[:HAS_POST]-blog " +
+              "return post.title as title, blog.name as blog, author.UID as author, count(liker) as likes " +
               "order by likes desc"
             );
       System.out.println(result);
       
+      //Find categories for the posts a person has liked.
       result = engine.execute(
               "start person=node:people(UID = '24602792') " +
               "match person-[:LIKES_POST]->post-[:IN_CATEGORY]->category " +
@@ -41,27 +42,31 @@ public class BlogsPersonLikes {
             );
       System.out.println(result);
       
+      //Find tags for the posts a person has liked.
       result = engine.execute(
               "start person=node:people(UID = '24602792') " +
-              "match person-[:LIKES_POST]->post-[:TAGGED]->tag " +
+              "match person-[:LIKES_POST]->()-[:TAGGED]->tag " +
               "return distinct tag.UID as Tags " +
               "order by Tags asc"
             );
       System.out.println(result);
    
+      //Find blogs a person likes, how many posts that blog has, and how many likes.
       result = engine.execute(
               "start person=node:people(UID = '24602792') " +
-              "match person-[:LIKES_POST]->()<-[:HAS_POST]-blog-[:HAS_POST]-post " +
-              "return distinct blog.name as blog, count(post) as posts " +
-              "order by posts desc"
+              "match person-[:LIKES_POST]->()<-[:HAS_POST]-blog-[:HAS_POST]-()<-[:LIKES_POST]-liker " +
+              "return distinct blog.name as blog, count(liker) as likes " +
+              "order by likes desc"
             );
       System.out.println(result);
       
+      //Find the posts that the authors like.
       result = engine.execute(
               "start person=node:people(UID = '24602792') " +
-              "match person-[:LIKES_POST]->()<-[:POSTED]-author, author-[:LIKES_POST]->post<-[:LIKES_POST]-liker " +
+              "match person-[:LIKES_POST]->()<-[:POSTED]-()-[:LIKES_POST]->post<-[:LIKES_POST]-liker " +
               "return post.title as title, count(liker) as likes " +
-              "order by likes desc"
+              "order by likes desc " +
+              "limit 10"
             );
       System.out.println(result);
 

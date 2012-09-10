@@ -8,11 +8,12 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
  *
- * This query lists all language nodes in the graph. Currently only 'en'... Boo!
+ * This query traverses the path Person -- [Likes] -- Post -- [Likes] -- Person
+ * to return a list of people who like the same post as the source node.
  * 
  * @author surferdwa
  */
-public class Languages {
+public class ShortestPath {
   
   private static GraphDatabaseService graphDb;
   private static ExecutionEngine engine;
@@ -25,8 +26,9 @@ public class Languages {
     engine = new ExecutionEngine( graphDb );
     try {
       ExecutionResult result = engine.execute(
-              "start language=node:languages('UID:*') " +
-              "return language"
+              "start cats=node:tags('UID:cats'), toaster=node:tags('UID:toaster') " +
+              "match p = shortestPath( cats-[*..15]-toaster ) " +
+              "return p"
             );
       System.out.println(result);
     } finally {
