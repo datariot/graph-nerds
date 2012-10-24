@@ -55,7 +55,7 @@ public class PersonInfo {
       result = engine.execute(
               "start person=node:people(UID = '24602792') " +
               "match person-[:LIKES_POST]->()<-[:HAS_POST]-blog-[:HAS_POST]-()<-[:LIKES_POST]-liker " +
-              "return distinct blog.name as blog, count(liker) as likes " +
+              "return distinct blog.UID, blog.name as blog, count(liker) as likes " +
               "order by likes desc"
             );
       System.out.println(result);
